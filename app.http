@@ -32,3 +32,30 @@ GET http://localhost:3000/user/following/
 Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwiaWF0IjoxNjg3Nzk1MjU4fQ.GCgVqMyfQua_CuYCFNjqALFd2NXwVsQUL89bUA5LPT8
 
 ###
+
+GET http://localhost:3000/user/followers/
+Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwiaWF0IjoxNjg3Nzk1MjU4fQ.GCgVqMyfQua_CuYCFNjqALFd2NXwVsQUL89bUA5LPT8
+
+###
+
+
+GET http://localhost:3000/user/tweets/
+Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwiaWF0IjoxNjg3Nzk1MjU4fQ.GCgVqMyfQua_CuYCFNjqALFd2NXwVsQUL89bUA5LPT8
+
+###
+
+
+POST http://localhost:3000/user/tweets/
+Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwiaWF0IjoxNjg3Nzk1MjU4fQ.GCgVqMyfQua_CuYCFNjqALFd2NXwVsQUL89bUA5LPT8
+Content-Type: application/json
+
+{
+   "tweet": "The Mornings..."
+}
+###
+
+
+
+DELETE http://localhost:3000/tweets/12/
+Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvZUJpZGVuIiwiaWF0IjoxNjg3Nzk1MjU4fQ.GCgVqMyfQua_CuYCFNjqALFd2NXwVsQUL89bUA5LPT8
+###

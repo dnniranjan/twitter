@@ -6,6 +6,8 @@ const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const date = require("date-fns/addDays");
+const format = require("date-fns/format");
 
 const dbpath = path.join(__dirname, "twitterClone.db");
 let db = null;
@@ -95,11 +97,12 @@ app.get("/user/tweets/feed/", authenticateToken, async (request, response) => {
   //console.log(username);
   const query = `select * from user Where username='${username}';`;
   const result = await db.get(query);
-  const query2 = `select * from follower where follower_user_id=${result.user_id};`;
+  const query2 = `select user.username,tweet.tweet,tweet.date_time AS datetime  from follower 
+  INNER JOIN tweet ON follower.following_user_id=tweet.user_id 
+  inner join user on tweet.user_id=user.user_id where follower.follower_user_id=${result.user_id} order by datetime desc limit 4;`;
   const result2 = await db.all(query2);
-  const query3 = `select * from tweet  where tweet_id=${result2[0].following_user_id} AND ${result2[1].following_user_id};`;
-  const result3 = await db.all(query3);
-  response.send(result3);
+  console.log(result2);
+  response.send(result2);
 });
 
 app.get("/user/following/", authenticateToken, async (request, response) => {
@@ -107,11 +110,11 @@ app.get("/user/following/", authenticateToken, async (request, response) => {
   //console.log(username);
   const query = `select * from user Where username='${username}';`;
   const result = await db.get(query);
-  const query2 = `select * from follower where follower_user_id=${result.user_id};`;
+  const query2 = `select distinct user.username  from follower 
+  INNER JOIN user ON follower.following_user_id=user.user_id where follower.follower_user_id=${result.user_id};`;
   const result2 = await db.all(query2);
-  const query3 = `select name from user  where user_id=${result2[0].following_user_id} AND  ${result2[1].following_user_id};`;
-  const result3 = await db.all(query3);
-  response.send(result3);
+  console.log(result2);
+  response.send(result2);
 });
 
 app.get("/user/followers/", authenticateToken, async (request, response) => {
@@ -119,9 +122,61 @@ app.get("/user/followers/", authenticateToken, async (request, response) => {
   //console.log(username);
   const query = `select * from user Where username='${username}';`;
   const result = await db.get(query);
-  const query2 = `select * from follower where follower_user_id=${result.user_id};`;
+  const query2 = `select distinct user.username  from follower
+  INNER  join user on follower.follower_user_id=user.user_id where follower.following_user_id=${result.user_id};`;
   const result2 = await db.all(query2);
-  const query3 = `select name from user  where user_id=${result2[0].following_user_id} AND  ${result2[1].following_user_id};`;
-  const result3 = await db.all(query3);
-  response.send(result3);
+  console.log(result2);
+  response.send(result2);
 });
+
+app.get("/user/tweets/", authenticateToken, async (request, response) => {
+  const { username } = request;
+  const query = `select * from user WHERE username='${username}';`;
+  const result = await db.get(query);
+  //const query1 = `select tweet from tweet WHERE user_id='${result.user_id}';`;
+  const query1 = `select tweet,count(like_id) AS likes,count(reply) AS replies, date_time AS dateTime from tweet INNER join reply ON tweet.user_id=reply.user_id
+  INNER join like ON reply.user_id=like.user_id where tweet.user_id='${result.user_id}';`;
+  const result1 = await db.all(query1);
+  response.send(result1);
+});
+
+app.post("/user/tweets/", authenticateToken, async (request, response) => {
+  const today = date(new Date(), 0);
+  //console.log(today);
+  const { username } = request;
+  const query = `select * from user WHERE username='${username}';`;
+  const result = await db.get(query);
+  const { tweet, user_id = result.user_id, date_time = today } = request.body;
+  const query1 = `INSERT INTO tweet(tweet,user_id,date_time)
+  Values('${tweet}',${user_id},'${date_time}');`;
+  const result1 = await db.run(query1);
+  response.send("Created a Tweet");
+});
+
+app.delete(
+  "/tweets/:tweetId/",
+  authenticateToken,
+  async (request, response) => {
+    const { username } = request;
+    const query = `select * from user WHERE username='${username}';`;
+    const result = await db.get(query);
+    const { tweetId } = request.params;
+    const query1 = `select tweet_id from tweet Where user_id=${result.user_id};`;
+    const result1 = await db.all(query1);
+    console.log(result1);
+    const arr = [];
+    for (eachItem of result1) {
+      arr.push(eachItem.tweet_id);
+    }
+    console.log(arr);
+    console.log(tweetId);
+    if (arr.includes(parseInt(tweetId))) {
+      const query2 = `Delete from tweet  Where tweet_id=${tweetId} AND user_id=${result.user_id};`;
+      const result2 = await db.all(query2);
+      response.send("Tweet Removed");
+    } else {
+      response.status(401);
+      response.send("Invalid Request");
+    }
+  }
+);
