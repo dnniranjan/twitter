@@ -180,3 +180,5 @@ app.delete(
     }
   }
 );
+
+module.exports = app;
